@@ -11,7 +11,7 @@
             var auth = new Authenticator();
 
             if (auth.Import(
-                Convert.FromBase64String("QVVUSB5VbnJlYWwgU2VjdXJpdHkgKEhlYXBPdmVycmlkZSkAIAAAAF/U0Edq8hlBduY45dr8cnm/9y0Xxb5srBU5DlPM98Sw"), 
+                Convert.FromBase64String("QVVUSB4AAABVbnJlYWwgU2VjdXJpdHkgKEhlYXBPdmVycmlkZSkAAAAAIAAAAAq2Zf3jcOv2nVWQC2jhUpvTDnCoUYaVb9hw/edeVK5+"),
                 out Authenticator.Details details))
             {
                 Console.WriteLine($"Import successful ({details.Name})");

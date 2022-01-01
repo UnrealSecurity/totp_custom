@@ -134,8 +134,8 @@ class Authenticator
 
     public struct Details
     {
-        public string Name;
-        public string Description;
+        public string Name = "";
+        public string Description = "";
     }
 
     /// <summary>
@@ -154,10 +154,12 @@ class Authenticator
                 writer.Write(magic);
 
                 // name
-                writer.Write(details.Name);
+                writer.Write(details.Name.Length);
+                writer.Write(Encoding.UTF8.GetBytes(details.Name));
 
                 // description
-                writer.Write(details.Description);
+                writer.Write(details.Description.Length);
+                writer.Write(Encoding.UTF8.GetBytes(details.Description));
 
                 // secret
                 writer.Write(Secret.Length);
@@ -184,8 +186,8 @@ class Authenticator
 
                 if (magic.SequenceEqual(Authenticator.magic))
                 {
-                    details.Name = reader.ReadString();
-                    details.Description = reader.ReadString();
+                    details.Name = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
+                    details.Description = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
                     this.Secret = reader.ReadBytes(reader.ReadInt32());
 
                     return true;
