@@ -5,6 +5,8 @@ class Authenticator
 {
     private static char[] digits = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
     private static byte[] magic = new byte[] { 0x41, 0x55, 0x54, 0x48 };
+    private List<Hash> hashes = new List<Hash>();
+
     private const string err_secretMustNotBeNull = "Secret must not be null.";
 
     public byte[]? Secret;
@@ -60,6 +62,18 @@ class Authenticator
         this.Expire = expire;
     }
 
+    public struct Details
+    {
+        public string Name = "";
+        public string Description = "";
+    }
+
+    private struct Hash
+    {
+        public int Value;
+        public long Time;
+    }
+
     private string GetCode(long timestamp)
     {
         if (Secret == null) throw new Exception(err_secretMustNotBeNull);
@@ -106,6 +120,14 @@ class Authenticator
     }
 
     /// <summary>
+    /// Clear hash value cache
+    /// </summary>
+    public void Clear()
+    {
+        hashes.Clear();
+    }
+
+    /// <summary>
     /// Get one time passcode that will be valid for {expire} seconds
     /// </summary>
     public string GetCode()
@@ -123,19 +145,46 @@ class Authenticator
 
         long timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
 
+        /**
+         * Remove expired hash values 
+         * & check if code is already used
+         */
+        int hashCode = code.GetHashCode();
+        bool used = false;
+
+        for (int i=0; i < hashes.Count; i++)
+        {
+            if (timestamp - hashes[i].Time > Expire)
+            {
+                hashes.RemoveAt(i);
+                i--;
+            }
+            else if (hashes[i].Value == hashCode)
+            {
+                used = true;
+            }
+        }
+
+        if (used) return false;
+
+        /**
+         * Check if code is valid
+         */
         for (long value = timestamp - Expire; value < timestamp; value++)
         {
             if (GetCode(value) == code)
+            {
+                hashes.Add(new Hash
+                {
+                    Value = hashCode,
+                    Time = DateTimeOffset.Now.ToUnixTimeSeconds()
+                });
+
                 return true;
+            }
         }
 
         return false;
-    }
-
-    public struct Details
-    {
-        public string Name = "";
-        public string Description = "";
     }
 
     /// <summary>
@@ -150,18 +199,26 @@ class Authenticator
         {
             using (var writer = new BinaryWriter(stream))
             {
-                // magic bytes
+                /**
+                 * Write magic bytes
+                 */
                 writer.Write(magic);
 
-                // name
+                /**
+                 * Write name prefixed with it's length
+                 */
                 writer.Write(details.Name.Length);
                 writer.Write(Encoding.UTF8.GetBytes(details.Name));
 
-                // description
+                /**
+                 * Write description prefixed with it's length
+                 */
                 writer.Write(details.Description.Length);
                 writer.Write(Encoding.UTF8.GetBytes(details.Description));
 
-                // secret
+                /**
+                 * Write the secret key bytes
+                 */
                 writer.Write(Secret.Length);
                 writer.Write(Secret);
 

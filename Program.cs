@@ -9,6 +9,7 @@
              * previously exported secret
              */
             var auth = new Authenticator();
+            auth.Length = 9;
 
             if (auth.Import(
                 Convert.FromBase64String("QVVUSB4AAABVbnJlYWwgU2VjdXJpdHkgKEhlYXBPdmVycmlkZSkAAAAAIAAAAAq2Zf3jcOv2nVWQC2jhUpvTDnCoUYaVb9hw/edeVK5+"),
