@@ -235,21 +235,27 @@ class Authenticator
     {
         details = new Details();
 
-        using (var stream = new MemoryStream(array))
+        try
         {
-            using (var reader = new BinaryReader(stream))
+            using (var stream = new MemoryStream(array))
             {
-                byte[] magic = reader.ReadBytes(Authenticator.magic.Length);
-
-                if (magic.SequenceEqual(Authenticator.magic))
+                using (var reader = new BinaryReader(stream))
                 {
-                    details.Name = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
-                    details.Description = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
-                    this.Secret = reader.ReadBytes(reader.ReadInt32());
+                    byte[] magic = reader.ReadBytes(Authenticator.magic.Length);
 
-                    return true;
+                    if (magic.SequenceEqual(Authenticator.magic))
+                    {
+                        details.Name = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
+                        details.Description = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
+                        this.Secret = reader.ReadBytes(reader.ReadInt32());
+
+                        return true;
+                    }
                 }
             }
+        }
+        catch (Exception)
+        {
         }
 
         return false;
