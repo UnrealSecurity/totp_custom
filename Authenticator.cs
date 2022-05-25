@@ -64,8 +64,8 @@ class Authenticator
 
     public struct Details
     {
-        public string Name = "";
-        public string Description = "";
+        public string Name;
+        public string Description;
     }
 
     private struct Hash
